@@ -29,7 +29,11 @@ model.eval()
 # ---- Image transformations (same as training) ----
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+     )
 ])
 
 
@@ -77,9 +81,14 @@ def predict_image(img_path):
 
     image_tensor = transform(resized_image).unsqueeze(0)
 
+    import torch.nn.functional as F   
     with torch.no_grad():
         output = model(image_tensor)
+        print("Raw output:", output)
+        probs = F.softmax(output, dim=1)
+        print("Probabilities:", probs)
         _, predicted = torch.max(output, 1)
+        print("Predicted index:", predicted.item())
 
     predicted_class = classes[predicted.item()]
     print("Predicted class:", predicted_class)  # debug
@@ -96,10 +105,14 @@ def predict_image(img_path):
 
     # ---- FINAL RETURN ----
     return final_result, predicted_class, "original.png", "depth.png", "processed.png", "segmented.png"
-
+    import torch.nn.functional as F
     with torch.no_grad():
      output = model(image_tensor)
+     print("Raw output:", output)
+     probs = F.softmax(output, dim=1)
+    print("Probabilities:", probs)
     _, predicted = torch.max(output, 1)
+    print("Predicted index:", predicted.item())
 
     predicted_class = classes[predicted.item()]
 
